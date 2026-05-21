@@ -7,10 +7,10 @@ points. Keep experiment ideas in `AGENTS.md` and operational rules in
 ## Structure
 
 ```text
-src/attention/            Python package
+src/attention.py          attention comparison entry point
 tests/                    lightweight tests
 results/                  downloaded or processed results, ignored
-scripts/                  env checks
+scripts/                  local run and env-check helpers
 rsync/                    rsync upload/download helpers
 rsync/lib/                shared SSH/rsync shell helpers
 AGENTS.md                 project intent and high-level context
@@ -74,5 +74,5 @@ Expected variables:
 
 ## Remote Project
 
-Remote paths and runtime defaults come from `.project.env` and `.ssh_server.env`.
-Do not hardcode a specific server in project scripts.
+Remote SSH paths come from `.ssh_server.env`. Hugging Face runtime settings come
+from `.hf.env`. Do not hardcode a specific server in project scripts.
