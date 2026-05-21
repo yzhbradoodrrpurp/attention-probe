@@ -1,0 +1,40 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.venv/
+uv.lock
+.DS_Store
+.idea/
+
+# Runtime artifacts.
+results/
+runs/
+checkpoints/
+wandb/
+
+# Local-only environment and secrets. Keep examples tracked.
+.env
+.env.local
+*.env
+!*.env.example
+.hf.env
+.hf*.env
+!.hf.env.example
+.wandb.env
+.wandb*.env
+!.wandb.env.example
+.ssh_server.env
+.ssh_server*.env
+!.ssh_server.env.example
+.project.env
+.project*.env
+!.project.env.example
+
+# Temporary workspace.
+temp_download/
+temp_delete/
+temp*/
+temp_*/

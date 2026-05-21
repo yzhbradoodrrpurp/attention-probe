@@ -1,0 +1,29 @@
+# Shared rsync exclude list. Patterns are matched relative to the rsync source
+# directory.
+
+.DS_Store
+.git/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.venv/
+uv.lock
+.idea/
+
+# Runtime env files may be explicitly uploaded to trusted remote servers.
+# Keep local SSH connection credentials local-only.
+.ssh_server.env
+.ssh_server*.env
+
+
+# Local run artifacts.
+results/
+runs/
+checkpoints/
+temp_download/
+temp_delete/
+temp*/
+temp_*/
