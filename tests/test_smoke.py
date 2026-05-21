@@ -1,5 +1,5 @@
-from attention import __version__
+import attention
 
 
-def test_package_imports() -> None:
-    assert __version__ == "0.1.0"
+def test_attention_entry_imports() -> None:
+    assert callable(attention.main)

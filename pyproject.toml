@@ -9,6 +9,14 @@ dependencies = []
 dev = [
   "pytest>=8.0",
 ]
+mllm = [
+  "accelerate>=0.26",
+  "numpy>=1.24",
+  "pillow>=10",
+  "pyyaml>=6.0",
+  "torch",
+  "transformers",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
