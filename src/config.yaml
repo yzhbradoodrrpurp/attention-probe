@@ -1,0 +1,17 @@
+model: Qwen/Qwen3-VL-4B-Instruct
+dataset: >-
+  /home/deeplearn/dataDisk/zwz_dataset/openai_export/test_10k_11k_original_with_crop_open_qa.openai_messages.jsonl
+subset: open_qa
+
+generation:
+  max_new_tokens: 8192
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  presence_penalty: 1.5
+  repetition_penalty: 1.0
+  seed: 42
+
+image:
+  min_pixels: 65536
+  max_pixels: 16777216
