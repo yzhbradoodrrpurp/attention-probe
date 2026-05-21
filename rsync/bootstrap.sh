@@ -22,7 +22,7 @@ require_remote_env "${REPO_ROOT}"
 remote_mkdir "${SSH_REMOTE_CODE_DIR}"
 
 run_with_password_prompt \
-  rsync -az --info=progress2 \
+  rsync -az --progress \
   --ignore-existing \
   --exclude-from "${SCRIPT_DIR}/ignore" \
   -e "${RSYNC_SSH_CMD}" \

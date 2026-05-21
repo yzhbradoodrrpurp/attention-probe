@@ -30,7 +30,7 @@ LOCAL_RESULT_DIR="${LOCAL_RESULT_DIR:-${REPO_ROOT}/results/downloaded}"
 mkdir -p "${LOCAL_RESULT_DIR}"
 
 run_with_password_prompt \
-  rsync -az --info=progress2 \
+  rsync -az --progress \
   --ignore-existing \
   --exclude-from "${SCRIPT_DIR}/ignore" \
   -e "${RSYNC_SSH_CMD}" \
