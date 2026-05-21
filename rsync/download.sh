@@ -9,8 +9,8 @@ set -euo pipefail
 #   ${REPO_ROOT}/.ssh_server.env
 #
 # It does not use --delete, so local files in the target directory are not removed.
-# It also uses --ignore-existing, so files already present in the local
-# target directory are not overwritten by remote files.
+# Files already present in the local target directory are overwritten by remote
+# files with the same path.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -31,7 +31,6 @@ mkdir -p "${LOCAL_RESULT_DIR}"
 
 run_with_password_prompt \
   rsync -az --progress \
-  --ignore-existing \
   --exclude-from "${SCRIPT_DIR}/ignore" \
   -e "${RSYNC_SSH_CMD}" \
   "${REMOTE_TARGET}:${REMOTE_RESULT_DIR}/" \
