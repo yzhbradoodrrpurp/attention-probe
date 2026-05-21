@@ -562,12 +562,12 @@ def layer_attention_to_span(
 
     num_layers = len(attentions[0])
     layers = resolve_layer_indexes(selected_layers, num_layers)
-    attention_sum: np.ndarray | None = None
+    distribution_sum: np.ndarray | None = None
     mass_by_token: list[float] = []
     used = 0
 
     for step_attentions in attentions:
-        step_vectors = []
+        step_distributions = []
         step_mass = []
         for layer in layers:
             tensor = step_attentions[layer]
@@ -581,18 +581,25 @@ def layer_attention_to_span(
                 .cpu()
                 .numpy()
             )
-            step_vectors.append(vector)
-            step_mass.append(float(vector.sum()))
-        if not step_vectors:
+            mass = float(vector.sum())
+            if mass <= 0:
+                continue
+            step_distributions.append(vector / mass)
+            step_mass.append(mass)
+        if not step_distributions:
             continue
-        step_vector = np.mean(np.stack(step_vectors, axis=0), axis=0)
-        attention_sum = step_vector if attention_sum is None else attention_sum + step_vector
+        step_distribution = np.mean(np.stack(step_distributions, axis=0), axis=0)
+        distribution_sum = (
+            step_distribution
+            if distribution_sum is None
+            else distribution_sum + step_distribution
+        )
         mass_by_token.append(float(np.mean(step_mass)))
         used += 1
 
-    if attention_sum is None or used == 0:
+    if distribution_sum is None or used == 0:
         raise RuntimeError("No generated-token attentions covered the requested image span.")
-    return attention_sum / used, mass_by_token
+    return distribution_sum / used, mass_by_token
 
 
 def image_grid_shape(
@@ -613,15 +620,17 @@ def image_grid_shape(
     return None
 
 
-def normalize_map(values: np.ndarray) -> np.ndarray:
+def normalize_map(values: np.ndarray, high_percentile: float = 99.0) -> np.ndarray:
     import numpy as np
 
     values = values.astype(np.float32)
     low = float(values.min())
-    high = float(values.max())
+    high = float(np.percentile(values, high_percentile))
+    if high <= low:
+        high = float(values.max())
     if high <= low:
         return np.zeros_like(values, dtype=np.float32)
-    return (values - low) / (high - low)
+    return np.clip((values - low) / (high - low), 0.0, 1.0)
 
 
 def save_heatmap_overlay(
@@ -642,7 +651,7 @@ def save_heatmap_overlay(
         Image.Resampling.BICUBIC,
     )
     red = Image.new("RGBA", original.size, (255, 32, 0, 0))
-    red.putalpha(heat_img.point(lambda value: int(value * 0.55)))
+    red.putalpha(heat_img.point(lambda value: int(value * 0.75)))
     Image.alpha_composite(original, red).save(output_path)
 
 
@@ -720,7 +729,7 @@ def run_condition(
     prompt_len = int(inputs["input_ids"].shape[1])
     generated_ids = generation.sequences[:, prompt_len:]
     answer = processor.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    original_attention, original_mass = layer_attention_to_span(
+    original_distribution, original_mass = layer_attention_to_span(
         generation.attentions,
         spans[0],
         parse_layers(args.layers),
@@ -728,11 +737,11 @@ def run_condition(
 
     condition_dir = args.output_dir / name
     condition_dir.mkdir(parents=True, exist_ok=True)
-    np.save(condition_dir / "original_attention.npy", original_attention)
+    np.save(condition_dir / "original_attention_distribution.npy", original_distribution)
     grid_shape = image_grid_shape(inputs, 0, spans[0].length, model)
     save_heatmap_overlay(
         original_image,
-        original_attention,
+        original_distribution,
         grid_shape,
         condition_dir / "original_attention.png",
     )
@@ -761,6 +770,8 @@ def run_condition(
         "crop_attention_mass_by_generated_token": crop_mass,
         "original_grid_shape": grid_shape,
         "layers": args.layers,
+        "attention_map": "span-normalized distribution over original-image visual tokens",
+        "heatmap_display": "99th-percentile clipped alpha overlay",
         "generation": {
             "max_new_tokens": config.max_new_tokens,
             "temperature": config.temperature,
@@ -779,7 +790,7 @@ def run_condition(
     return {
         "name": name,
         "summary": summary,
-        "original_attention": original_attention,
+        "original_attention": original_distribution,
         "grid_shape": grid_shape,
     }
 
